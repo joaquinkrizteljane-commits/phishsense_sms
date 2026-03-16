@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum PermissionType { sms, notification, contacts }
+enum PermissionType { sms, contacts, notification }
 
 class PermissionPage extends StatelessWidget {
   final PermissionType type;
@@ -22,12 +22,19 @@ class PermissionPage extends StatelessWidget {
       }) {
     return showModalBottomSheet(
       context: context,
-      backgroundColor: Color(0xFFF2F2F2),
+      useRootNavigator: true,
+      backgroundColor: const Color(0xFFF2F2F2),
       isScrollControlled: true,
-      builder: (_) => PermissionPage(
+      builder: (sheetContext) => PermissionPage(
         type: type,
-        onAllow: onAllow,
-        onDeny: onDeny,
+        onAllow: () {
+          Navigator.pop(sheetContext);
+          onAllow();
+        },
+        onDeny: () {
+          Navigator.pop(sheetContext);
+          onDeny();
+        },
       ),
     );
   }
@@ -41,15 +48,9 @@ class PermissionPage extends StatelessWidget {
           title: 'Allow SMS Access',
           description:
           'PhishSense needs to read your incoming SMS messages to analyze and detect potential phishing threats in real-time.',
+          denyText: "Don't Allow",
         );
-      case PermissionType.notification:
-        return _PermissionContent(
-          icon: Icons.notifications_outlined,
-          iconColor: const Color(0xFFE0A800),
-          title: 'Allow Notifications',
-          description:
-          'PhishSense will send you instant alerts when a suspicious message is detected, even when the app is in the background.',
-        );
+
       case PermissionType.contacts:
         return _PermissionContent(
           icon: Icons.contacts_outlined,
@@ -57,6 +58,17 @@ class PermissionPage extends StatelessWidget {
           title: 'Allow Contacts Access',
           description:
           'PhishSense uses your contacts list to identify trusted senders and reduce false positives in threat detection.',
+          denyText: "Don't Allow",
+        );
+
+      case PermissionType.notification:
+        return _PermissionContent(
+          icon: Icons.notifications_outlined,
+          iconColor: const Color(0xFFE0A800),
+          title: 'Allow Notifications',
+          description:
+          'PhishSense will send you instant alerts when a suspicious message is detected, even when the app is in the background.',
+          denyText: "Not Now",
         );
     }
   }
@@ -74,7 +86,6 @@ class PermissionPage extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle
           Container(
             width: 40,
             height: 4,
@@ -84,8 +95,6 @@ class PermissionPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-
-          // Icon
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
@@ -95,69 +104,56 @@ class PermissionPage extends StatelessWidget {
             child: Icon(content.icon, size: 40, color: content.iconColor),
           ),
           const SizedBox(height: 20),
-
-          // App name badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              RichText(
-                text: const TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Phish',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1A7A72),
-                        fontSize: 14,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'Sense',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFE0A800),
-                        fontSize: 14,
-                      ),
-                    ),
-                    TextSpan(
-                      text: ' is requesting permission',
-                      style: TextStyle(
-                        color: Color(0xFF888880),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+          RichText(
+            text: const TextSpan(
+              children: [
+                TextSpan(
+                  text: 'Phish',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A7A72),
+                    fontSize: 14,
+                  ),
                 ),
-              ),
-            ],
+                TextSpan(
+                  text: 'Sense',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFE0A800),
+                    fontSize: 14,
+                  ),
+                ),
+                TextSpan(
+                  text: ' is requesting permission',
+                  style: TextStyle(
+                    color: Color(0xFF888880),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 10),
-
-          // Title
           Text(
             content.title,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1A1A1A),
             ),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 10),
-
-          // Description
           Text(
             content.description,
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[600],
               height: 1.5,
             ),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 28),
-
-          // Allow Button
           SizedBox(
             width: double.infinity,
             height: 52,
@@ -173,33 +169,32 @@ class PermissionPage extends StatelessWidget {
               ),
               child: const Text(
                 'Allow',
-                style:
-                TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
           const SizedBox(height: 12),
-
-          // Deny Button
           SizedBox(
             width: double.infinity,
             height: 52,
-              child: OutlinedButton(
-                onPressed: onDeny,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey[600],
-                  side: BorderSide(color: Colors.grey.shade300),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+            child: OutlinedButton(
+              onPressed: onDeny,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.grey[600],
+                side: BorderSide(color: Colors.grey.shade300),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Text(
-                  'Not Now',
-                  style:
-                  TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              child: Text(
+                content.denyText,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
+          ),
         ],
       ),
     );
@@ -211,11 +206,13 @@ class _PermissionContent {
   final Color iconColor;
   final String title;
   final String description;
+  final String denyText;
 
   _PermissionContent({
     required this.icon,
     required this.iconColor,
     required this.title,
     required this.description,
+    required this.denyText,
   });
 }

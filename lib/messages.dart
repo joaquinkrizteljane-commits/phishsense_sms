@@ -1,15 +1,110 @@
 import 'package:flutter/material.dart';
-import 'package:phishsense_sms/profile.dart';
 import 'spam_folder.dart';
 import 'profile.dart';
 
-class MessagesPage extends StatelessWidget {
-  const MessagesPage({super.key});
+class MessagesPage extends StatefulWidget {
+  final String name;
+  final int defaultSmsIndex;
+  final bool smsPermission;
+  final bool notificationPermission;
+  final bool contactsPermission;
+  final bool spamFolderEnabled;
 
-  String? get message => null;
+  const MessagesPage({
+    super.key,
+    required this.name,
+    required this.defaultSmsIndex,
+    required this.smsPermission,
+    required this.notificationPermission,
+    required this.contactsPermission,
+    required this.spamFolderEnabled,
+  });
+
+  @override
+  State<MessagesPage> createState() => _MessagesPageState();
+}
+
+class _MessagesPageState extends State<MessagesPage> {
+  late int _defaultSmsIndex;
+  late bool _smsPermission;
+  late bool _notificationPermission;
+  late bool _contactsPermission;
+  late bool _spamFolderEnabled;
+
+  @override
+  void initState() {
+    super.initState();
+    _defaultSmsIndex = widget.defaultSmsIndex;
+    _smsPermission = widget.smsPermission;
+    _notificationPermission = widget.notificationPermission;
+    _contactsPermission = widget.contactsPermission;
+    _spamFolderEnabled = widget.spamFolderEnabled;
+  }
+
+  void _showCenterNote(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(.25),
+      builder: (_) {
+        return Center(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF1A7A72),
+                  Color(0xFFE0A800),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(.3),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  color: Colors.white,
+                  size: 22,
+                ),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      Navigator.of(context).maybePop();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final scaffoldKey = GlobalKey<ScaffoldState>();
+
     final messages = [
       {
         "sender": "+63 958-477-3278",
@@ -46,18 +141,44 @@ class MessagesPage extends StatelessWidget {
         "time": "2h ago",
         "isPhishing": false,
       },
+      {
+        "sender": "Jaica",
+        "message": "Tel nasan ka?",
+        "time": "5 days",
+        "isPhishing": false,
+      },
     ];
 
     return Scaffold(
+      key: scaffoldKey,
+      endDrawer: ProfileSidebar(
+        name: widget.name,
+        defaultSmsIndex: _defaultSmsIndex,
+        smsPermission: _smsPermission,
+        notificationPermission: _notificationPermission,
+        contactsPermission: _contactsPermission,
+        spamFolderEnabled: _spamFolderEnabled,
+        onChangeDefaultSms: (index) {
+          setState(() => _defaultSmsIndex = index);
+        },
+        onChangeSmsPermission: (v) {
+          setState(() => _smsPermission = v);
+        },
+        onChangeNotificationPermission: (v) {
+          setState(() => _notificationPermission = v);
+        },
+        onChangeContactsPermission: (v) {
+          setState(() => _contactsPermission = v);
+        },
+        onChangeSpamFolder: (v) {
+          setState(() => _spamFolderEnabled = v);
+        },
+      ),
       backgroundColor: const Color(0xFFF6F4EC),
       body: SafeArea(
         child: Column(
           children: [
-
-            /// PHISHSENSE HEADER
             const _TopHeader(),
-
-            /// MESSAGING HEADER
             Padding(
               padding: const EdgeInsets.fromLTRB(22, 16, 22, 0),
               child: Row(
@@ -86,51 +207,51 @@ class MessagesPage extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.folder_shared_outlined, size: 35),
-                    color: const Color(0xFF1A7A72),
+                    icon: Icon(
+                      _spamFolderEnabled ? Icons.folder : Icons.folder_off,
+                      size: 35,
+                    ),
+                    color: _spamFolderEnabled
+                        ? const Color(0xFF1A7A72)
+                        : Colors.grey.withOpacity(.5),
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SpamFolderPage(),
-                        ),
-                      );
+                      if (_spamFolderEnabled) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SpamFolderPage(),
+                          ),
+                        );
+                      } else {
+                        _showCenterNote("Spam Folder is disabled.");
+                      }
                     },
                   ),
-
                   IconButton(
-                    icon: const Icon(Icons.tune, size: 30),
+                    icon: const Icon(Icons.person, size: 30),
                     color: const Color(0xFF1A7A72),
                     onPressed: () {
+                      scaffoldKey.currentState?.openEndDrawer();
                     },
                   ),
                 ],
               ),
             ),
-
             const SizedBox(height: 18),
-
-            /// SEARCH BAR
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 18),
               child: _SearchBar(),
             ),
-
             const SizedBox(height: 14),
-
-            /// MESSAGE LIST
             Expanded(
               child: ListView.separated(
                 padding: const EdgeInsets.only(bottom: 16),
                 itemCount: messages.length,
-
-                /// subtle separator between conversations
                 separatorBuilder: (_, __) => Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   height: 1,
                   color: Colors.black.withOpacity(.06),
                 ),
-
                 itemBuilder: (context, index) {
                   final item = messages[index];
                   return _MessageCard(
@@ -142,8 +263,6 @@ class MessagesPage extends StatelessWidget {
                 },
               ),
             ),
-
-            /// bottom bar
             Container(
               height: 20,
               width: double.infinity,
@@ -164,8 +283,8 @@ class _TopHeader extends StatelessWidget {
     return Container(
       color: const Color(0xFF1A7A72),
       padding: const EdgeInsets.fromLTRB(22, 12, 22, 16),
-      child: Row(
-        children: const [
+      child: const Row(
+        children: [
           Icon(
             Icons.phishing,
             color: Color(0xFF888880),
@@ -182,8 +301,8 @@ class _TopHeader extends StatelessWidget {
                 Shadow(
                   blurRadius: 6,
                   color: Colors.black26,
-                  offset: Offset(0,2),
-                )
+                  offset: Offset(0, 2),
+                ),
               ],
             ),
           ),
@@ -197,8 +316,8 @@ class _TopHeader extends StatelessWidget {
                 Shadow(
                   blurRadius: 6,
                   color: Colors.black26,
-                  offset: Offset(0,2),
-                )
+                  offset: Offset(0, 2),
+                ),
               ],
             ),
           ),
@@ -334,9 +453,7 @@ class _MessageCard extends StatelessWidget {
                                   ),
                                 ),
                               ),
-
                               const SizedBox(width: 6),
-
                               Text(
                                 time,
                                 style: const TextStyle(
@@ -345,7 +462,7 @@ class _MessageCard extends StatelessWidget {
                                 ),
                               ),
                             ],
-                          )
+                          ),
                         ),
                       ),
                     ],

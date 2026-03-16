@@ -8,6 +8,9 @@ import 'permission.dart';
 import 'default_sms.dart';
 import 'name_page.dart';
 import 'profile.dart';
+import 'messages.dart';
+import 'error.dart';
+import 'sync.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,6 +53,7 @@ class _AppFlowState extends State<AppFlow> {
   bool _smsPermission = false;
   bool _notificationPermission = false;
   bool _contactsPermission = false;
+  bool _spamFolderEnabled = false;
 
   String _userName = "";
 
@@ -66,6 +70,13 @@ class _AppFlowState extends State<AppFlow> {
   void _resetFlow() {
     setState(() {
       _currentStep = 0;
+      _defaultSmsIndex = 1;
+      _setupCompleted = false;
+      _smsPermission = false;
+      _notificationPermission = false;
+      _contactsPermission = false;
+      _spamFolderEnabled = false;
+      _userName = "";
     });
   }
 
@@ -83,6 +94,30 @@ class _AppFlowState extends State<AppFlow> {
     );
   }
 
+  void _showSmsError() {
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (!mounted) return;
+      ErrorPage.show(
+        context,
+        title: "SMS Access Required",
+        message:
+        "You cannot continue unless SMS access is allowed because PhishSense needs to scan messages for phishing.",
+      );
+    });
+  }
+
+  void _showContactsError() {
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (!mounted) return;
+      ErrorPage.show(
+        context,
+        title: "Contacts Access Required",
+        message:
+        "You cannot continue unless Contacts access is allowed because PhishSense uses trusted contacts to reduce false phishing alerts.",
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     switch (_currentStep) {
@@ -92,7 +127,7 @@ class _AppFlowState extends State<AppFlow> {
           onGetStarted: _showNotice,
           onGoToProfile: () {
             setState(() {
-              _currentStep = 6;
+              _currentStep = 8;
             });
           },
         );
@@ -104,18 +139,16 @@ class _AppFlowState extends State<AppFlow> {
               context,
               type: PermissionType.sms,
               onAllow: () {
-                Navigator.pop(context);
                 setState(() {
                   _smsPermission = true;
                 });
                 _nextStep();
               },
               onDeny: () {
-                Navigator.pop(context);
                 setState(() {
                   _smsPermission = false;
                 });
-                _nextStep();
+                _showSmsError();
               },
             );
           },
@@ -127,20 +160,18 @@ class _AppFlowState extends State<AppFlow> {
           onContinue: () {
             PermissionPage.show(
               context,
-              type: PermissionType.notification,
+              type: PermissionType.contacts,
               onAllow: () {
-                Navigator.pop(context);
                 setState(() {
-                  _notificationPermission = true;
+                  _contactsPermission = true;
                 });
                 _nextStep();
               },
               onDeny: () {
-                Navigator.pop(context);
                 setState(() {
-                  _notificationPermission = false;
+                  _contactsPermission = false;
                 });
-                _nextStep();
+                _showContactsError();
               },
             );
           },
@@ -149,25 +180,17 @@ class _AppFlowState extends State<AppFlow> {
 
       case 3:
         return Step3Page(
-          onContinue: () {
-            PermissionPage.show(
-              context,
-              type: PermissionType.contacts,
-              onAllow: () {
-                Navigator.pop(context);
-                setState(() {
-                  _contactsPermission = true;
-                  _currentStep = 4;
-                });
-              },
-              onDeny: () {
-                Navigator.pop(context);
-                setState(() {
-                  _contactsPermission = false;
-                  _currentStep = 4;
-                });
-              },
-            );
+          onAllow: () {
+            setState(() {
+              _notificationPermission = true;
+              _currentStep = 4;
+            });
+          },
+          onSkip: () {
+            setState(() {
+              _notificationPermission = false;
+              _currentStep = 4;
+            });
           },
           onBack: _prevStep,
         );
@@ -195,16 +218,35 @@ class _AppFlowState extends State<AppFlow> {
         );
 
       case 6:
-        return ProfilePage(
+        return SyncPage(
+          onDone: () {
+            if (!mounted) return;
+            setState(() {
+              _currentStep = 7;
+            });
+          },
+        );
+
+      case 7:
+        return MessagesPage(
           name: _userName,
           defaultSmsIndex: _defaultSmsIndex,
           smsPermission: _smsPermission,
           notificationPermission: _notificationPermission,
           contactsPermission: _contactsPermission,
+          spamFolderEnabled: _spamFolderEnabled,
+        );
+
+      case 8:
+        return ProfileSidebar(
+          name: _userName,
+          defaultSmsIndex: _defaultSmsIndex,
+          smsPermission: _smsPermission,
+          notificationPermission: _notificationPermission,
+          contactsPermission: _contactsPermission,
+          spamFolderEnabled: _spamFolderEnabled,
           onChangeDefaultSms: (index) {
-            setState(() {
-              _defaultSmsIndex = index;
-            });
+            setState(() => _defaultSmsIndex = index);
           },
           onChangeSmsPermission: (v) {
             setState(() => _smsPermission = v);
@@ -215,12 +257,16 @@ class _AppFlowState extends State<AppFlow> {
           onChangeContactsPermission: (v) {
             setState(() => _contactsPermission = v);
           },
-          onSignOut: _resetFlow,
+          onChangeSpamFolder: (bool value) {
+            setState(() => _spamFolderEnabled = value);
+          },
         );
 
       default:
         return const Scaffold(
-          body: SizedBox(),
+          body: Center(
+            child: Text("Something went wrong."),
+          ),
         );
     }
   }

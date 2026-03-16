@@ -4,7 +4,11 @@ class Step2Page extends StatelessWidget {
   final VoidCallback onContinue;
   final VoidCallback onBack;
 
-  const Step2Page({super.key, required this.onContinue, required this.onBack});
+  const Step2Page({
+    super.key,
+    required this.onContinue,
+    required this.onBack,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +18,6 @@ class Step2Page extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Header + Progress
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
@@ -23,13 +26,13 @@ class Step2Page extends StatelessWidget {
                   Row(
                     children: [
                       GestureDetector(
-                          onTap: onBack,
-                          child: const Icon(
-                            Icons.arrow_back_ios_new,
-                            size: 20,
-                            color: Color(0xFF1A7A72),
-                          ),
+                        onTap: onBack,
+                        child: const Icon(
+                          Icons.arrow_back_ios_new,
+                          size: 20,
+                          color: Color(0xFF1A7A72),
                         ),
+                      ),
                       const SizedBox(width: 12),
                       const Text(
                         'PhishSense Setup',
@@ -78,8 +81,6 @@ class Step2Page extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Content
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -88,7 +89,7 @@ class Step2Page extends StatelessWidget {
                   children: [
                     const SizedBox(height: 16),
                     const Text(
-                      'Enable Phishing\nAlert Notifications',
+                      'Verify Your\nTrusted Contacts',
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
@@ -98,7 +99,7 @@ class Step2Page extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     Text(
-                      'Get instantly notified when a suspicious message is detected. Stay protected even when the app is running in the background.',
+                      'PhishSense uses your contacts to identify legitimate senders and reduce false positives when scanning messages.',
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[600],
@@ -106,50 +107,58 @@ class Step2Page extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 28),
-
-                    // Mock notification cards
-                    _MockAlertCard(
-                      level: 'Phishing',
-                      message: 'This message shows characteristics commonly associated with phishing attempts.',
-                      color: Colors.red.shade400,
-                      icon: Icons.warning_amber,
-                    ),
-                    const SizedBox(height: 12),
-                    _MockAlertCard(
-                      level: 'Safe',
-                      message: 'No suspicious indicators were detected in this message.',
-                      color: const Color(0xFF1A7A72),
-                      icon: Icons.check_circle_outline,
+                    Center(
+                      child: Container(
+                        width: 300,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            _ContactRow(name: 'Mom', verified: true),
+                            _ContactRow(name: 'BDO Bank Alert', verified: false),
+                            _ContactRow(name: 'John Reyes', verified: true),
+                            _ContactRow(name: 'Unknown +63911...', verified: false),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-
-            // Bottom Button
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
               child: SizedBox(
                 width: double.infinity,
                 height: 54,
-                  child: ElevatedButton(
-                    onPressed: onContinue,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A7A72),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
+                child: ElevatedButton(
+                  onPressed: onContinue,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1A7A72),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Text(
-                      'Allow Notifications',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Allow Contacts Access',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -157,64 +166,40 @@ class Step2Page extends StatelessWidget {
   }
 }
 
-class _MockAlertCard extends StatelessWidget {
-  final String level;
-  final String message;
-  final Color color;
-  final IconData icon;
+class _ContactRow extends StatelessWidget {
+  final String name;
+  final bool verified;
 
-  const _MockAlertCard({
-    required this.level,
-    required this.message,
-    required this.color,
-    required this.icon,
-  });
+  const _ContactRow({required this.name, required this.verified});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10),
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: verified
+                ? const Color(0xFF1A7A72).withOpacity(0.15)
+                : Colors.grey.shade200,
+            child: Icon(
+              Icons.person,
+              size: 18,
+              color: verified ? const Color(0xFF1A7A72) : Colors.grey,
             ),
-            child: Icon(icon, color: color, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  level,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: color,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  message,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
-              ],
+            child: Text(
+              name,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
+          ),
+          Icon(
+            verified ? Icons.verified_rounded : Icons.help_outline,
+            size: 18,
+            color: verified ? const Color(0xFF1A7A72) : Colors.grey,
           ),
         ],
       ),

@@ -16,11 +16,27 @@ class DefaultSmsPage extends StatefulWidget {
 
 class _DefaultSmsPageState extends State<DefaultSmsPage> {
   late int selectedIndex;
+  String? infoMessage;
 
   @override
   void initState() {
     super.initState();
     selectedIndex = widget.initialIndex;
+  }
+
+  void _handleContinue() {
+    if (selectedIndex == 1) {
+      setState(() {
+        infoMessage = "Set PhishSense as your default app to continue.";
+      });
+      return;
+    }
+
+    setState(() {
+      infoMessage = null;
+    });
+
+    widget.onSetDefault(selectedIndex);
   }
 
   @override
@@ -49,23 +65,11 @@ class _DefaultSmsPageState extends State<DefaultSmsPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 44,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD6D1C5),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
                   const Icon(
                     Icons.sms_outlined,
                     size: 40,
                     color: Color(0xFF1A7A72),
                   ),
-
                   const SizedBox(height: 16),
 
                   RichText(
@@ -116,14 +120,51 @@ class _DefaultSmsPageState extends State<DefaultSmsPage> {
                     icon: Icons.message_outlined,
                   ),
 
+                  if (infoMessage != null) ...[
+                    const SizedBox(height: 18),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF7F6),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF1A7A72).withOpacity(0.25),
+                        ),
+                      ),
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            size: 18,
+                            color: Color(0xFF1A7A72),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "Set PhishSense as your default app to continue.",
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                height: 1.4,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
                   const SizedBox(height: 26),
 
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        widget.onSetDefault(selectedIndex);
-                      },
+                      onPressed: _handleContinue,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1A7A72),
                         foregroundColor: Colors.white,
@@ -134,9 +175,9 @@ class _DefaultSmsPageState extends State<DefaultSmsPage> {
                         ),
                       ),
                       child: Text(
-                        selectedIndex == widget.initialIndex
-                            ? "Continue"
-                            : "Set as default",
+                        selectedIndex == 0
+                            ? "Set PhishSense as default"
+                            : "Continue",
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
@@ -165,6 +206,9 @@ class _DefaultSmsPageState extends State<DefaultSmsPage> {
       onTap: () {
         setState(() {
           selectedIndex = index;
+          if (index == 0) {
+            infoMessage = null;
+          }
         });
       },
       child: AnimatedContainer(
@@ -219,6 +263,9 @@ class _DefaultSmsPageState extends State<DefaultSmsPage> {
             onChanged: (value) {
               setState(() {
                 selectedIndex = value!;
+                if (value == 0) {
+                  infoMessage = null;
+                }
               });
             },
           ),
