@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 class Step3Page extends StatelessWidget {
   final VoidCallback onAllow;
   final VoidCallback onSkip;
-  final VoidCallback onBack;
 
   const Step3Page({
     super.key,
     required this.onAllow,
     required this.onSkip,
-    required this.onBack,
   });
 
   @override
@@ -25,26 +23,13 @@ class Step3Page extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: onBack,
-                        child: const Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 20,
-                          color: Color(0xFF1A7A72),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'PhishSense Setup',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF1A1A1A),
-                        ),
-                      ),
-                    ],
+                  const Text(
+                    'PhishSense Setup',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -161,7 +146,7 @@ class Step3Page extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: onSkip,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.grey[700],
+                        foregroundColor: Colors.grey,
                         side: BorderSide(color: Colors.grey.shade300),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -240,7 +225,10 @@ class _MockAlertCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   message,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
                 ),
               ],
             ),

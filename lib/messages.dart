@@ -11,6 +11,11 @@ class MessagesPage extends StatefulWidget {
   final bool contactsPermission;
   final bool spamFolderEnabled;
 
+  final bool shareAnonymousData;
+  final bool showDetectionPopup;
+  final ValueChanged<bool> onChangeShareAnonymousData;
+  final ValueChanged<bool> onChangeShowDetectionPopup;
+
   const MessagesPage({
     super.key,
     required this.name,
@@ -19,6 +24,10 @@ class MessagesPage extends StatefulWidget {
     required this.notificationPermission,
     required this.contactsPermission,
     required this.spamFolderEnabled,
+    required this.shareAnonymousData,
+    required this.showDetectionPopup,
+    required this.onChangeShareAnonymousData,
+    required this.onChangeShowDetectionPopup,
   });
 
   @override
@@ -26,11 +35,15 @@ class MessagesPage extends StatefulWidget {
 }
 
 class _MessagesPageState extends State<MessagesPage> {
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
   late int _defaultSmsIndex;
   late bool _smsPermission;
   late bool _notificationPermission;
   late bool _contactsPermission;
   late bool _spamFolderEnabled;
+  late bool _shareAnonymousData;
+  late bool _showDetectionPopup;
 
   @override
   void initState() {
@@ -40,33 +53,28 @@ class _MessagesPageState extends State<MessagesPage> {
     _notificationPermission = widget.notificationPermission;
     _contactsPermission = widget.contactsPermission;
     _spamFolderEnabled = widget.spamFolderEnabled;
+    _shareAnonymousData = widget.shareAnonymousData;
+    _showDetectionPopup = widget.showDetectionPopup;
   }
 
   void _showCenterNote(String message) {
     showDialog(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(.25),
+      barrierColor: Colors.black.withOpacity(.15),
       builder: (_) {
         return Center(
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 40),
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF1A7A72),
-                  Color(0xFFE0A800),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(40),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(.3),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
+                  color: Colors.black.withOpacity(.12),
+                  offset: const Offset(0, 4),
+                  blurRadius: 12,
                 ),
               ],
             ),
@@ -75,17 +83,17 @@ class _MessagesPageState extends State<MessagesPage> {
               children: [
                 const Icon(
                   Icons.info_outline,
-                  color: Colors.white,
+                  color: Color(0xFF1A7A72),
                   size: 22,
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Flexible(
                   child: Text(
                     message,
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF333333),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -96,16 +104,14 @@ class _MessagesPageState extends State<MessagesPage> {
       },
     );
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (!mounted) return;
-      Navigator.of(context).maybePop();
+      Navigator.of(context, rootNavigator: true).maybePop();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final scaffoldKey = GlobalKey<ScaffoldState>();
-
     final messages = [
       {
         "sender": "+63 958-477-3278",
@@ -124,14 +130,14 @@ class _MessagesPageState extends State<MessagesPage> {
       {
         "sender": "Maya",
         "message":
-        "Awesome! We have increased your wallet limit to ₱500,000 so you can do more with your Maya account! ...",
+        "Awesome! We have increased your wallet limit to ₱500,000 so you can do more with your Maya account!",
         "time": "15m ago",
         "isPhishing": false,
       },
       {
         "sender": "Bank Support",
         "message":
-        "[URGENT] Your bank account has been temporarily suspended due to suspicious activity. Click here to verify your information and ...",
+        "[URGENT] Your bank account has been temporarily suspended due to suspicious activity. Click here to verify your information and win something!",
         "time": "1h ago",
         "isPhishing": true,
       },
@@ -159,6 +165,8 @@ class _MessagesPageState extends State<MessagesPage> {
         notificationPermission: _notificationPermission,
         contactsPermission: _contactsPermission,
         spamFolderEnabled: _spamFolderEnabled,
+        shareAnonymousData: _shareAnonymousData,
+        showDetectionPopup: _showDetectionPopup,
         onChangeDefaultSms: (index) {
           setState(() => _defaultSmsIndex = index);
         },
@@ -173,6 +181,14 @@ class _MessagesPageState extends State<MessagesPage> {
         },
         onChangeSpamFolder: (v) {
           setState(() => _spamFolderEnabled = v);
+        },
+        onChangeShareAnonymousData: (v) {
+          setState(() => _shareAnonymousData = v);
+          widget.onChangeShareAnonymousData(v);
+        },
+        onChangeShowDetectionPopup: (v) {
+          setState(() => _showDetectionPopup = v);
+          widget.onChangeShowDetectionPopup(v);
         },
       ),
       backgroundColor: const Color(0xFFF6F4EC),
@@ -260,6 +276,16 @@ class _MessagesPageState extends State<MessagesPage> {
                     message: item["message"] as String,
                     time: item["time"] as String,
                     isPhishing: item["isPhishing"] as bool,
+                    shareAnonymousData: _shareAnonymousData,
+                    showDetectionPopup: _showDetectionPopup,
+                    onChangeShareAnonymousData: (v) {
+                      setState(() => _shareAnonymousData = v);
+                      widget.onChangeShareAnonymousData(v);
+                    },
+                    onChangeShowDetectionPopup: (v) {
+                      setState(() => _showDetectionPopup = v);
+                      widget.onChangeShowDetectionPopup(v);
+                    },
                   );
                 },
               ),
@@ -366,12 +392,20 @@ class _MessageCard extends StatelessWidget {
   final String message;
   final String time;
   final bool isPhishing;
+  final bool shareAnonymousData;
+  final bool showDetectionPopup;
+  final ValueChanged<bool> onChangeShareAnonymousData;
+  final ValueChanged<bool> onChangeShowDetectionPopup;
 
   const _MessageCard({
     required this.sender,
     required this.message,
     required this.time,
     required this.isPhishing,
+    required this.shareAnonymousData,
+    required this.showDetectionPopup,
+    required this.onChangeShareAnonymousData,
+    required this.onChangeShowDetectionPopup,
   });
 
   @override
@@ -389,6 +423,10 @@ class _MessageCard extends StatelessWidget {
               message: message,
               time: time,
               isPhishing: isPhishing,
+              shareAnonymousData: shareAnonymousData,
+              showDetectionPopup: showDetectionPopup,
+              onChangeShareAnonymousData: onChangeShareAnonymousData,
+              onChangeShowDetectionPopup: onChangeShowDetectionPopup,
             ),
           ),
         );

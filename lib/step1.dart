@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 
 class Step1Page extends StatelessWidget {
   final VoidCallback onContinue;
-  final VoidCallback onBack;
 
-  const Step1Page({super.key,
+  const Step1Page({
+    super.key,
     required this.onContinue,
-    required this.onBack,
   });
 
   @override
@@ -17,39 +16,20 @@ class Step1Page extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Header + Progress
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
-                  /// Back + Title Row
-                  Row(
-                    children: [
-                      GestureDetector(
-                          onTap: onBack,
-                          child: const Icon(
-                            Icons.arrow_back_ios_new,
-                            size: 20,
-                            color: Color(0xFF1A7A72),
-                          ),
-                        ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'PhishSense Setup',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF1A1A1A),
-                        ),
-                      ),
-                    ],
+                  const Text(
+                    'PhishSense Setup',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
-
                   const SizedBox(height: 12),
-
-                  /// Progress Bar
                   Row(
                     children: [
                       Expanded(
@@ -86,8 +66,6 @@ class Step1Page extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Content
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -114,8 +92,6 @@ class Step1Page extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 32),
-
-                    // Illustration
                     Center(
                       child: Container(
                         width: 260,
@@ -127,7 +103,6 @@ class Step1Page extends StatelessWidget {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Outer ring
                             Container(
                               width: 220,
                               height: 220,
@@ -136,7 +111,6 @@ class Step1Page extends StatelessWidget {
                                 shape: BoxShape.circle,
                               ),
                             ),
-                            // Inner
                             Container(
                               width: 150,
                               height: 150,
@@ -150,7 +124,6 @@ class Step1Page extends StatelessWidget {
                               size: 72,
                               color: Color(0xFF1A7A72),
                             ),
-                            // Floating warning badge
                             Positioned(
                               top: 48,
                               right: 48,
@@ -160,8 +133,11 @@ class Step1Page extends StatelessWidget {
                                   color: Color(0xFFE0A800),
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.search,
-                                    size: 16, color: Colors.white),
+                                child: const Icon(
+                                  Icons.search,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                             Positioned(
@@ -173,8 +149,11 @@ class Step1Page extends StatelessWidget {
                                   color: Colors.red.shade400,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.warning_amber_rounded,
-                                    size: 16, color: Colors.white),
+                                child: const Icon(
+                                  Icons.warning_amber_rounded,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ],
@@ -185,31 +164,31 @@ class Step1Page extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Bottom Button
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
               child: SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: onContinue,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1A7A72),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: onContinue,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1A7A72),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Text(
-                      'Grant Permission',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Grant Permission',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
+            ),
           ],
         ),
       ),

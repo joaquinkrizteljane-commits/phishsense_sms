@@ -1,7 +1,4 @@
-import 'dart:math' as math;
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'permission.dart';
 import 'privacy_policy.dart';
 
 class ProfileSidebar extends StatefulWidget {
@@ -10,12 +7,16 @@ class ProfileSidebar extends StatefulWidget {
   final bool notificationPermission;
   final bool contactsPermission;
   final bool spamFolderEnabled;
+  final bool shareAnonymousData;
+  final bool showDetectionPopup;
 
   final Function(int) onChangeDefaultSms;
   final Function(bool) onChangeSmsPermission;
   final Function(bool) onChangeNotificationPermission;
   final Function(bool) onChangeContactsPermission;
   final Function(bool) onChangeSpamFolder;
+  final Function(bool) onChangeShareAnonymousData;
+  final Function(bool) onChangeShowDetectionPopup;
 
   final String name;
 
@@ -32,6 +33,10 @@ class ProfileSidebar extends StatefulWidget {
     required this.onChangeContactsPermission,
     required this.onChangeSpamFolder,
     required this.name,
+    required this.shareAnonymousData,
+    required this.showDetectionPopup,
+    required this.onChangeShareAnonymousData,
+    required this.onChangeShowDetectionPopup,
   });
 
   @override
@@ -43,6 +48,8 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
   String _avatar = "👨‍💻";
   DateTime? _lastUpdate;
   bool _shareData = false;
+  late bool _notificationPermission;
+  late bool _showDetectionPopup;
 
   final List<String> _avatars = [
     "👨‍💻",
@@ -67,6 +74,9 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
   void initState() {
     super.initState();
     _name = widget.name;
+    _notificationPermission = widget.notificationPermission;
+    _showDetectionPopup = widget.showDetectionPopup;
+    _shareData = widget.shareAnonymousData;
   }
 
   bool get _canEdit {
@@ -85,18 +95,13 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
             margin: const EdgeInsets.symmetric(horizontal: 40),
             padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF6F4EC),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(40),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.white.withOpacity(.8),
-                  offset: const Offset(-4, -4),
-                  blurRadius: 8,
-                ),
-                BoxShadow(
-                  color: Colors.black.withOpacity(.15),
-                  offset: const Offset(4, 4),
-                  blurRadius: 10,
+                  color: Colors.black.withOpacity(.12),
+                  offset: const Offset(0, 4),
+                  blurRadius: 12,
                 ),
               ],
             ),
@@ -126,9 +131,17 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
       },
     );
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(milliseconds: 2500), () {
       if (!mounted) return;
-      Navigator.of(context).maybePop();
+      Navigator.of(context, rootNavigator: true).maybePop();
+    });
+  }
+
+  void _closeSidebarThenShowNote(String message) {
+    Navigator.pop(context);
+    Future.delayed(const Duration(milliseconds: 180), () {
+      if (!mounted) return;
+      _showCenterNote(message);
     });
   }
 
@@ -177,7 +190,9 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
           ElevatedButton(
             onPressed: () {
               setState(() {
-                _name = controller.text.trim().isEmpty ? _name : controller.text.trim();
+                _name = controller.text.trim().isEmpty
+                    ? _name
+                    : controller.text.trim();
                 _lastUpdate = DateTime.now();
               });
               Navigator.pop(context);
@@ -225,19 +240,58 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
     String? subtitle,
     Widget? trailing,
   }) {
-    return ListTile(
-      leading: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A7A72),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: Colors.white),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A7A72),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 1),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                      height: 1.15,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: Color(0xFF444444),
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: trailing ?? const SizedBox(),
+          ),
+        ],
       ),
-      title: Text(title),
-      subtitle: subtitle != null ? Text(subtitle) : null,
-      trailing: trailing,
     );
   }
 
@@ -269,21 +323,25 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
                 child: Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
-                      child: Row(
+                      padding: const EdgeInsets.fromLTRB(12, 24, 12, 8),
+                      child: Stack(
+                        alignment: Alignment.center,
                         children: [
-                          const Expanded(
+                          const Center(
                             child: Text(
-                              "Account",
+                              "Profile",
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.close),
-                            onPressed: () => Navigator.pop(context),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => Navigator.pop(context),
+                            ),
                           ),
                         ],
                       ),
@@ -348,14 +406,44 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
                               ],
                             ),
                             const SizedBox(height: 20),
+                            const Padding(
+                              padding: EdgeInsets.fromLTRB(16, 6, 16, 4),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  "Settings",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
                             _row(
                               icon: Icons.notifications_active,
                               title: "Notification Permission",
                               subtitle: "Allow phishing alerts",
                               trailing: Switch(
-                                value: widget.notificationPermission,
+                                value: _notificationPermission,
                                 activeColor: const Color(0xFF1A7A72),
-                                onChanged: widget.onChangeNotificationPermission,
+                                onChanged: (v) async {
+                                  final ok = await _confirm(
+                                    v
+                                        ? "Turn On Notifications"
+                                        : "Turn Off Notifications",
+                                    v
+                                        ? "Are you sure you want to turn on phishing alert notifications?"
+                                        : "Are you sure you want to turn off phishing alert notifications?",
+                                  );
+
+                                  if (!ok) return;
+
+                                  setState(() {
+                                    _notificationPermission = v;
+                                  });
+                                  widget.onChangeNotificationPermission(v);
+                                },
                               ),
                             ),
                             _row(
@@ -366,7 +454,9 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
                                 value: widget.contactsPermission,
                                 activeColor: const Color(0xFF1A7A72),
                                 onChanged: (_) {
-                                  _showCenterNote("Contacts permission cannot be turned off.");
+                                  _showCenterNote(
+                                    "Contacts permission cannot be turned off.",
+                                  );
                                 },
                               ),
                             ),
@@ -378,7 +468,22 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
                                 value: widget.smsPermission,
                                 activeColor: const Color(0xFF1A7A72),
                                 onChanged: (_) {
-                                  _showCenterNote("Phishing detection cannot be disabled.");
+                                  _showCenterNote(
+                                    "Phishing detection cannot be disabled.",
+                                  );
+                                },
+                              ),
+                            ),
+                            _row(
+                              icon: Icons.mobile_screen_share_outlined,
+                              title: "Share Anonymous Data",
+                              subtitle:
+                              "Help improve phishing detection accuracy",
+                              trailing: Switch(
+                                value: _shareData,
+                                activeColor: const Color(0xFF1A7A72),
+                                onChanged: (v) {
+                                  setState(() => _shareData = v);
                                 },
                               ),
                             ),
@@ -395,26 +500,46 @@ class _ProfileSidebarState extends State<ProfileSidebar> {
                                       "Enable Spam Folder",
                                       "Detected phishing messages will appear in the Spam Folder.",
                                     );
-                                    if (ok) {
-                                      widget.onChangeSpamFolder(true);
-                                      _showCenterNote("Spam Folder enabled.");
-                                    }
+                                    if (!ok) return;
+                                    widget.onChangeSpamFolder(true);
+                                    _closeSidebarThenShowNote(
+                                      "Spam Folder enabled.",
+                                    );
                                   } else {
+                                    final ok = await _confirm(
+                                      "Disable Spam Folder",
+                                      "Are you sure you want to turn off Spam Folder?",
+                                    );
+                                    if (!ok) return;
                                     widget.onChangeSpamFolder(false);
-                                    _showCenterNote("Spam Folder disabled.");
+                                    _closeSidebarThenShowNote(
+                                      "Spam Folder disabled.",
+                                    );
                                   }
                                 },
                               ),
                             ),
                             _row(
-                              icon: Icons.mobile_screen_share_outlined,
-                              title: "Share Anonymous Data",
-                              subtitle: "Help improve phishing detection accuracy",
+                              icon: Icons.visibility,
+                              title: "Show Detection Popup",
+                              subtitle: "Show phishing/safe detection card again",
                               trailing: Switch(
-                                value: _shareData,
+                                value: _showDetectionPopup,
                                 activeColor: const Color(0xFF1A7A72),
-                                onChanged: (v) {
-                                  setState(() => _shareData = v);
+                                onChanged: (v) async {
+                                  final ok = await _confirm(
+                                    v ? "Turn On Detection Popup" : "Turn Off Detection Popup",
+                                    v
+                                        ? "Are you sure you want to turn on the phishing/safe detection popup again?"
+                                        : "Are you sure you want to turn off the phishing/safe detection popup?",
+                                  );
+
+                                  if (!ok) return;
+
+                                  setState(() {
+                                    _showDetectionPopup = v;
+                                  });
+                                  widget.onChangeShowDetectionPopup(v);
                                 },
                               ),
                             ),
@@ -463,6 +588,8 @@ class _SidebarSoftBackground extends StatelessWidget {
 }
 
 class _SoftTexturePainter extends CustomPainter {
+  const _SoftTexturePainter();
+
   @override
   void paint(Canvas canvas, Size size) {
     final teal = const Color(0xFF1A7A72).withOpacity(0.05);

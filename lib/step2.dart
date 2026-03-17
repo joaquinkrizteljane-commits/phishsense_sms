@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 
 class Step2Page extends StatelessWidget {
   final VoidCallback onContinue;
-  final VoidCallback onBack;
 
   const Step2Page({
     super.key,
     required this.onContinue,
-    required this.onBack,
   });
 
   @override
@@ -23,26 +21,13 @@ class Step2Page extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: onBack,
-                        child: const Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 20,
-                          color: Color(0xFF1A7A72),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'PhishSense Setup',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF1A1A1A),
-                        ),
-                      ),
-                    ],
+                  const Text(
+                    'PhishSense Setup',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -154,7 +139,10 @@ class Step2Page extends StatelessWidget {
                   ),
                   child: const Text(
                     'Allow Contacts Access',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -170,7 +158,10 @@ class _ContactRow extends StatelessWidget {
   final String name;
   final bool verified;
 
-  const _ContactRow({required this.name, required this.verified});
+  const _ContactRow({
+    required this.name,
+    required this.verified,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +184,10 @@ class _ContactRow extends StatelessWidget {
           Expanded(
             child: Text(
               name,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           Icon(

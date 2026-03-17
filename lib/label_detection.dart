@@ -6,12 +6,21 @@ class LabelDetectionPage extends StatefulWidget {
   final String time;
   final bool isPhishing;
 
+  final bool shareAnonymousData;
+  final bool showDetectionPopup;
+  final ValueChanged<bool> onChangeShareAnonymousData;
+  final ValueChanged<bool> onChangeShowDetectionPopup;
+
   const LabelDetectionPage({
     super.key,
     required this.sender,
     required this.message,
     required this.time,
     required this.isPhishing,
+    required this.shareAnonymousData,
+    required this.showDetectionPopup,
+    required this.onChangeShareAnonymousData,
+    required this.onChangeShowDetectionPopup,
   });
 
   @override
@@ -19,16 +28,56 @@ class LabelDetectionPage extends StatefulWidget {
 }
 
 class _LabelDetectionPageState extends State<LabelDetectionPage> {
-  bool shareMessage = true;
+  late bool shareMessage;
   bool dontShowAgain = false;
-  bool showOverlay = true;
+  late bool showOverlay;
+
+  @override
+  void initState() {
+    super.initState();
+    shareMessage = widget.shareAnonymousData;
+    showOverlay = widget.showDetectionPopup;
+  }
+
+  List<String> get phishingReasons {
+    final text = widget.message.toLowerCase();
+    final reasons = <String>[];
+
+    if (text.contains("full name") ||
+        text.contains("home address") ||
+        text.contains("date of birth") ||
+        text.contains("valid id")) {
+      reasons.add("Asks for personal info");
+    }
+
+    if (text.contains("act fast") ||
+        text.contains("reply now") ||
+        text.contains("urgent")) {
+      reasons.add("Urgent tone");
+    }
+
+    if (text.contains("won") ||
+        text.contains("lottery") ||
+        text.contains("\$1,000,000") ||
+        text.contains("prize")) {
+      reasons.add("Unrealistic Reward");
+    }
+
+    if (text.contains("http://") || text.contains("https://")) {
+      reasons.add("Suspicious link");
+    }
+
+    return reasons;
+  }
+
+  List<String> get safeReasons => ["Known Contact"];
 
   @override
   Widget build(BuildContext context) {
     final bool isPhishing = widget.isPhishing;
 
     final Color statusColor =
-    isPhishing ? const Color(0xFFD80E0E) : const Color(0xFF46C12F);
+    isPhishing ? const Color(0xFFD80E0E) : const Color(0xFF50BF32);
 
     final String statusText =
     isPhishing ? "Phishing Detected" : "Safe Message";
@@ -36,6 +85,8 @@ class _LabelDetectionPageState extends State<LabelDetectionPage> {
     final String subtitleText = isPhishing
         ? "This message shows signs of a phishing attempt. Do not click links or share personal information."
         : "This message is from a saved contact. However, always remain cautious of suspicious links or requests.";
+
+    final List<String> labels = isPhishing ? phishingReasons : safeReasons;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F4EC),
@@ -94,26 +145,26 @@ class _LabelDetectionPageState extends State<LabelDetectionPage> {
                   height: 1.2,
                   color: const Color(0xFF204760),
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 26),
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: Text(
                     subtitleText,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      fontSize: 13.5,
+                      fontSize: 12,
                       color: Color(0xFF707070),
                       height: 1.35,
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Container(
-                  width: 255,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  width: 220,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: statusColor,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(24),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -122,76 +173,85 @@ class _LabelDetectionPageState extends State<LabelDetectionPage> {
                         statusText,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 17,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Text(
-                        isPhishing ? "‼️" : "✅",
-                        style: const TextStyle(fontSize: 20),
+                        isPhishing ? "⚠️" : "✅",
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 25),
                 const Text(
                   "Saturday, December 14",
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     color: Color(0xFF6C6C6C),
                   ),
                 ),
                 const SizedBox(height: 22),
                 Expanded(
-                  child: Padding(
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 22),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Container(
+                              constraints: const BoxConstraints(maxWidth: 270),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Text(
+                                widget.message,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                  height: 1.35,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Text(
+                                widget.time,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  color: Color(0xFF6C6C6C),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Container(
-                            constraints: const BoxConstraints(maxWidth: 300),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Text(
-                              widget.message,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                color: Colors.black87,
-                                height: 1.35,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Container(
-                            constraints: const BoxConstraints(maxWidth: 245),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFECE4D7),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Text(
-                              isPhishing
-                                  ? "Mukhang scam yan. Ignore ko na."
-                                  : "Okay po, noted ❤️",
-                              style: const TextStyle(
-                                fontSize: 15,
-                                color: Colors.black87,
-                                height: 1.35,
-                              ),
+                            constraints: const BoxConstraints(maxWidth: 270),
+                            child: Wrap(
+                              alignment: WrapAlignment.start,
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: labels
+                                  .map(
+                                    (reason) => _ReasonChip(
+                                  label: reason,
+                                  isSafe: !isPhishing,
+                                ),
+                              )
+                                  .toList(),
                             ),
                           ),
                         ),
@@ -238,159 +298,176 @@ class _LabelDetectionPageState extends State<LabelDetectionPage> {
                 ),
               ],
             ),
-
             if (showOverlay)
-              Center(
+              Positioned.fill(
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 22),
-                  padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF496376).withOpacity(.96),
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            isPhishing
-                                ? const _PhishingIconWidget()
-                                : const _SafeIconWidget(),
-                            const SizedBox(height: 12),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              decoration: BoxDecoration(
-                                color: statusColor,
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  statusText,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16.5,
-                                    fontWeight: FontWeight.bold,
+                  color: Colors.black.withOpacity(0.08),
+                  child: Center(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.78,
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF496376).withOpacity(.95),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                isPhishing
+                                    ? const _PhishingTriangleIcon()
+                                    : const _SmallSafeIconWidget(),
+                                const SizedBox(height: 8),
+                                Container(
+                                  width: double.infinity,
+                                  height: 34,
+                                  decoration: BoxDecoration(
+                                    color: statusColor,
+                                    borderRadius: BorderRadius.circular(18),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    statusText,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Checkbox(
-                                    value: shareMessage,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        shareMessage = value ?? false;
-                                      });
-                                    },
-                                    activeColor: const Color(0xFF7DBD52),
-                                    materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                    visualDensity: VisualDensity.compact,
+                                const SizedBox(height: 10),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
                                   ),
-                                  const SizedBox(width: 4),
-                                  const Expanded(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(top: 4),
-                                      child: Text(
-                                        "Share this message to contribute\nto model improvement",
-                                        style: TextStyle(
-                                          fontSize: 13.5,
-                                          color: Colors.black87,
-                                          height: 1.25,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Checkbox(
+                                        value: shareMessage,
+                                        onChanged: (value) {
+                                          final bool newValue = value ?? false;
+                                          setState(() {
+                                            shareMessage = newValue;
+                                          });
+                                          widget.onChangeShareAnonymousData(
+                                            newValue,
+                                          );
+                                        },
+                                        activeColor: const Color(0xFF7DBD52),
+                                        materialTapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                      const SizedBox(width: 2),
+                                      const Expanded(
+                                        child: Padding(
+                                          padding: EdgeInsets.only(top: 4),
+                                          child: Text(
+                                            "Share this message to contribute\nto model improvement",
+                                            style: TextStyle(
+                                              fontSize: 12.5,
+                                              color: Colors.black87,
+                                              height: 1.2,
+                                            ),
+                                          ),
                                         ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 38,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor: const Color(0xFF0E3550),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    onPressed: () {},
+                                    child: const Text(
+                                      "❌ Report as inaccurate",
+                                      style: TextStyle(
+                                        fontSize: 14.5,
+                                        color: Colors.white,
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 42,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  elevation: 0,
-                                  backgroundColor: const Color(0xFF0E3550),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(6),
+                                ),
+                                const SizedBox(height: 8),
+                                InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      dontShowAgain = !dontShowAgain;
+                                    });
+
+                                    if (dontShowAgain) {
+                                      widget.onChangeShareAnonymousData(true);
+                                      widget.onChangeShowDetectionPopup(false);
+                                    } else {
+                                      widget.onChangeShowDetectionPopup(true);
+                                    }
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        dontShowAgain
+                                            ? Icons.check_box
+                                            : Icons.check_box_outline_blank,
+                                        size: 15,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Text(
+                                        "Do not show this again",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          decoration:
+                                          TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                onPressed: () {},
-                                child: const Text(
-                                  "❌ Report as inaccurate",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
+                              ],
                             ),
-                            const SizedBox(height: 12),
-                            InkWell(
+                          ),
+                          Positioned(
+                            top: -2,
+                            right: -2,
+                            child: InkWell(
                               onTap: () {
                                 setState(() {
-                                  dontShowAgain = !dontShowAgain;
+                                  showOverlay = false;
                                 });
                               },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    dontShowAgain
-                                        ? Icons.check_box
-                                        : Icons.check_box_outline_blank,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    "Do not show this again",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ],
+                              child: const Icon(
+                                Icons.close,
+                                size: 28,
+                                color: Colors.white,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              showOverlay = false;
-                            });
-                          },
-                          child: const Icon(
-                            Icons.close,
-                            size: 34,
-                            color: Colors.white,
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -401,25 +478,67 @@ class _LabelDetectionPageState extends State<LabelDetectionPage> {
   }
 }
 
-class _SafeIconWidget extends StatelessWidget {
-  const _SafeIconWidget();
+class _ReasonChip extends StatelessWidget {
+  final String label;
+  final bool isSafe;
+
+  const _ReasonChip({
+    required this.label,
+    this.isSafe = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Color chipColor = const Color(0xFFF5A623);
+
+    if (isSafe) {
+      chipColor = const Color(0xFF63DE44);
+    } else if (label == "Asks for personal info" || label == "Urgent tone") {
+      chipColor = const Color(0xFFE30000);
+    } else if (label == "Unrealistic Reward") {
+      chipColor = const Color(0xFFFF8C00);
+    } else if (label == "Suspicious link") {
+      chipColor = const Color(0xFFF8B233);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: chipColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+          height: 1,
+        ),
+      ),
+    );
+  }
+}
+
+class _SmallSafeIconWidget extends StatelessWidget {
+  const _SmallSafeIconWidget();
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 100,
-      height: 86,
+      width: 82,
+      height: 66,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Icon(
-            Icons.shield,
-            size: 82,
+            Icons.shield_rounded,
+            size: 58,
             color: Colors.green.shade700,
           ),
           const Icon(
             Icons.check_rounded,
-            size: 38,
+            size: 28,
             color: Colors.white,
           ),
         ],
@@ -428,32 +547,15 @@ class _SafeIconWidget extends StatelessWidget {
   }
 }
 
-class _PhishingIconWidget extends StatelessWidget {
-  const _PhishingIconWidget();
+class _PhishingTriangleIcon extends StatelessWidget {
+  const _PhishingTriangleIcon();
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 100,
-      height: 86,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Icon(
-            Icons.warning_rounded,
-            size: 82,
-            color: Colors.red.shade400,
-          ),
-          const Positioned(
-            top: 18,
-            child: Icon(
-              Icons.priority_high_rounded,
-              size: 38,
-              color: Colors.black,
-            ),
-          ),
-        ],
-      ),
+    return Icon(
+      Icons.warning_amber_rounded,
+      size: 60,
+      color: Colors.red.shade400,
     );
   }
 }
