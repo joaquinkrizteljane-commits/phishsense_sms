@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'spam_folder.dart';
 import 'profile.dart';
+import 'label_detection.dart';
 
 class MessagesPage extends StatefulWidget {
   final String name;
@@ -109,7 +110,7 @@ class _MessagesPageState extends State<MessagesPage> {
       {
         "sender": "+63 958-477-3278",
         "message":
-        "Congratulations! You have won a brand new iPhone 15 Pro Max! 🎉 Just click here to claim your FREE prize now: https://win-free-iphone-now...",
+        "Congratulations! YOU WON \$1,000,000 in the Mega Millions Lottery! 🤑 To process your claim, please reply with your full name, home address, date of birth, and a valid ID number. Click here to verify instantly: https://mega-millions-winner.com Act fast! Reply NOW to avoid losing your prize!",
         "time": "now",
         "isPhishing": true,
       },
@@ -378,100 +379,117 @@ class _MessageCard extends StatelessWidget {
     final badgeColor =
     isPhishing ? const Color(0xFFF2554F) : const Color(0xFF06C85E);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    sender,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: Color(0xFF5A5A5A),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: badgeColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    isPhishing ? "Phishing Detected" : "Safe Message",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w500,
-                      height: 1,
-                    ),
-                  ),
-                ),
-              ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LabelDetectionPage(
+              sender: sender,
+              message: message,
+              time: time,
+              isPhishing: isPhishing,
             ),
           ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFFF3EEE4),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(22),
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        width: 10,
-                        color: badgeColor,
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      sender,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Color(0xFF5A5A5A),
+                        fontWeight: FontWeight.w500,
                       ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 12, 16, 10),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  message,
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    height: 1.4,
-                                    color: Colors.black,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    decoration: BoxDecoration(
+                      color: badgeColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      isPhishing ? "Phishing Detected" : "Safe Message",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w500,
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3EEE4),
+                  borderRadius: BorderRadius.circular(22),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(22),
+                  child: IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          width: 10,
+                          color: badgeColor,
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(14, 12, 16, 10),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    message,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      height: 1.4,
+                                      color: Colors.black,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                time,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF666666),
+                                const SizedBox(width: 6),
+                                Text(
+                                  time,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF666666),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
