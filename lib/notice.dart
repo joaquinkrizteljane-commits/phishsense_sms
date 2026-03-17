@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class NoticeDialog extends StatelessWidget {
+class NoticeDialog extends StatefulWidget {
   final VoidCallback onAccept;
   final VoidCallback onClose;
 
@@ -26,6 +26,45 @@ class NoticeDialog extends StatelessWidget {
   }
 
   @override
+  State<NoticeDialog> createState() => _NoticeDialogState();
+}
+
+class _NoticeDialogState extends State<NoticeDialog> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasReachedBottom = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_checkIfReachedBottom);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkIfReachedBottom();
+    });
+  }
+
+  void _checkIfReachedBottom() {
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+    final reachedBottom =
+        position.pixels >= (position.maxScrollExtent - 8);
+
+    if (reachedBottom != _hasReachedBottom) {
+      setState(() {
+        _hasReachedBottom = reachedBottom;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_checkIfReachedBottom);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -36,7 +75,6 @@ class NoticeDialog extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title row
             Row(
               children: [
                 Container(
@@ -56,7 +94,7 @@ class NoticeDialog extends StatelessWidget {
                   child: Text(
                     'Data Usage Notice',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A),
                     ),
@@ -65,7 +103,7 @@ class NoticeDialog extends StatelessWidget {
                 MouseRegion(
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
-                    onTap: onClose,
+                    onTap: widget.onClose,
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
@@ -84,34 +122,37 @@ class NoticeDialog extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Scrollable content
             ConstrainedBox(
               constraints: const BoxConstraints(maxHeight: 280),
               child: SingleChildScrollView(
+                controller: _scrollController,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'At PhishSense, your privacy is our highest priority. Below is a transparent summary of how we handle your data.',
-                      style:
-                      TextStyle(fontSize: 13, color: Colors.grey[600], height: 1.5),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        height: 1.5,
+                      ),
                     ),
                     const SizedBox(height: 14),
-                    _DataPointRow(
+                    const _DataPointRow(
                       number: '1',
                       title: 'SMS Messages',
                       detail:
                       'We scan your incoming SMS messages locally on-device to detect phishing attempts. No messages are stored or transmitted.',
                     ),
                     const SizedBox(height: 10),
-                    _DataPointRow(
+                    const _DataPointRow(
                       number: '2',
                       title: 'Contacts',
                       detail:
                       'Your contacts list is used to verify known senders. This data stays on your device and is never uploaded to our servers.',
                     ),
                     const SizedBox(height: 10),
-                    _DataPointRow(
+                    const _DataPointRow(
                       number: '3',
                       title: 'Threat Analysis',
                       detail:
@@ -127,21 +168,26 @@ class NoticeDialog extends StatelessWidget {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.lock_outline,
-                              size: 16, color: Color(0xFF1A7A72)),
+                          const Icon(
+                            Icons.lock_outline,
+                            size: 16,
+                            color: Color(0xFF1A7A72),
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'All sensitive data is processed locally. We do not sell or share your personal information with third parties.',
                               style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[700],
-                                  height: 1.4),
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                                height: 1.4,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -149,32 +195,40 @@ class NoticeDialog extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Accept Button
             SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: onAccept,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A7A72),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
+              width: double.infinity,
+              height: 30,
+              child: ElevatedButton(
+                onPressed: _hasReachedBottom ? widget.onAccept : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _hasReachedBottom
+                      ? const Color(0xFF1A7A72)
+                      : const Color(0xFFD3D3D3),
+                  foregroundColor:
+                  _hasReachedBottom ? Colors.white : Colors.white70,
+                  disabledBackgroundColor: const Color(0xFFD3D3D3),
+                  disabledForegroundColor: Colors.white70,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text(
-                    'I Understand & Accept',
-                    style: TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.bold),
+                  elevation: _hasReachedBottom ? 4 : 0,
+                ),
+                child: const Text(
+                  'I Understand & Accept',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+            ),
 
             const SizedBox(height: 10),
             Center(
               child: Text(
-                'You can review this anytime in Settings → Privacy & Policy',
+                _hasReachedBottom
+                    ? 'You can review this anytime in \nProfile → Privacy & Policy'
+                    : 'Read and scroll to the bottom \nto enable the accept button',
                 style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                 textAlign: TextAlign.center,
               ),
@@ -213,9 +267,10 @@ class _DataPointRow extends StatelessWidget {
             child: Text(
               number,
               style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
@@ -227,15 +282,19 @@ class _DataPointRow extends StatelessWidget {
               Text(
                 title,
                 style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A)),
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A1A),
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 detail,
-                style:
-                TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.4),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
               ),
             ],
           ),

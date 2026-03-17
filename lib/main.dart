@@ -7,7 +7,6 @@ import 'step3.dart';
 import 'permission.dart';
 import 'default_sms.dart';
 import 'name_page.dart';
-import 'profile.dart';
 import 'messages.dart';
 import 'error.dart';
 import 'sync.dart';
@@ -54,17 +53,13 @@ class _AppFlowState extends State<AppFlow> {
   bool _notificationPermission = false;
   bool _contactsPermission = false;
   bool _spamFolderEnabled = false;
+  bool _shareAnonymousData = false;
+  bool _showDetectionPopup = true;
 
   String _userName = "";
 
   void _nextStep() {
     setState(() => _currentStep++);
-  }
-
-  void _prevStep() {
-    setState(() {
-      if (_currentStep > 0) _currentStep--;
-    });
   }
 
   void _resetFlow() {
@@ -125,11 +120,7 @@ class _AppFlowState extends State<AppFlow> {
         return WelcomePage(
           setupCompleted: _setupCompleted,
           onGetStarted: _showNotice,
-          onGoToProfile: () {
-            setState(() {
-              _currentStep = 8;
-            });
-          },
+          onGoToProfile: () {},
         );
 
       case 1:
@@ -152,7 +143,6 @@ class _AppFlowState extends State<AppFlow> {
               },
             );
           },
-          onBack: _resetFlow,
         );
 
       case 2:
@@ -175,7 +165,6 @@ class _AppFlowState extends State<AppFlow> {
               },
             );
           },
-          onBack: _prevStep,
         );
 
       case 3:
@@ -192,7 +181,6 @@ class _AppFlowState extends State<AppFlow> {
               _currentStep = 4;
             });
           },
-          onBack: _prevStep,
         );
 
       case 4:
@@ -235,30 +223,13 @@ class _AppFlowState extends State<AppFlow> {
           notificationPermission: _notificationPermission,
           contactsPermission: _contactsPermission,
           spamFolderEnabled: _spamFolderEnabled,
-        );
-
-      case 8:
-        return ProfileSidebar(
-          name: _userName,
-          defaultSmsIndex: _defaultSmsIndex,
-          smsPermission: _smsPermission,
-          notificationPermission: _notificationPermission,
-          contactsPermission: _contactsPermission,
-          spamFolderEnabled: _spamFolderEnabled,
-          onChangeDefaultSms: (index) {
-            setState(() => _defaultSmsIndex = index);
+          shareAnonymousData: _shareAnonymousData,
+          showDetectionPopup: _showDetectionPopup,
+          onChangeShareAnonymousData: (v) {
+            setState(() => _shareAnonymousData = v);
           },
-          onChangeSmsPermission: (v) {
-            setState(() => _smsPermission = v);
-          },
-          onChangeNotificationPermission: (v) {
-            setState(() => _notificationPermission = v);
-          },
-          onChangeContactsPermission: (v) {
-            setState(() => _contactsPermission = v);
-          },
-          onChangeSpamFolder: (bool value) {
-            setState(() => _spamFolderEnabled = value);
+          onChangeShowDetectionPopup: (v) {
+            setState(() => _showDetectionPopup = v);
           },
         );
 
